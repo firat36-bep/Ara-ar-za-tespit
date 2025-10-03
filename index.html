@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Araç Arıza Tespit Sistemi</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .diagnosis-result {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .diagnosis-result.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .diagnosis-result.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .history-item h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .history-item p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .severity-high { border-left-color: #dc3545; }
+        .severity-medium { border-left-color: #ffc107; }
+        .severity-low { border-left-color: #28a745; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .maintenance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .maintenance-overdue {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .maintenance-due-soon {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            transition: width 0.3s ease;
+        }
+
+        .ai-suggestion {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .ai-suggestion h3 {
+            margin-top: 0;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            padding-right: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .export-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .export-section button {
+            width: auto;
+            padding: 10px 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .export-section {
+                flex-direction: column;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .notification.warning {
+            background: #ffc107;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Gelişmiş Araç Arıza Tespit Sistemi</h1>
+            <p>Yapay zeka destekli arıza teşhisi ve bakım takip sistemi</p>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('diagnosis')">🔧 Arıza Teşhisi</div>
+            <div class="nav-tab" onclick="switchTab('maintenance')">🛠️ Bakım Takibi</div>
+            <div class="nav-tab" onclick="switchTab('history')">📋 Geçmiş</div>
+            <div class="nav-tab" onclick="switchTab('analytics')">📊 Analiz</div>
+        </div>
+
+        <!-- Arıza Teşhisi Sekmesi -->
+        <div id="diagnosis" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDiagnoses">0</div>
+                    <div class="stat-label">Toplam Teşhis</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="criticalIssues">0</div>
+                    <div class="stat-label">Kritik Arıza</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="resolvedIssues">0</div>
+                    <div class="stat-label">Çözülen Arıza</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgCost">0₺</div>
+                    <div class="stat-label">Ortalama Maliyet</div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="card">
+                    <h2>🔧 Arıza Teşhisi</h2>
+                    <form id="diagnosisForm">
+                        <div class="form-group">
+                            <label for="vehicleBrand">Araç Markası</label>
+                            <select id="vehicleBrand" required>
+                                <option value="">Marka Seçin</option>
+                                <option value="Toyota">Toyota</option>
+                                <option value="Volkswagen">Volkswagen</option>
+                                <option value="Ford">Ford</option>
+                                <option value="BMW">BMW</option>
+                                <option value="Mercedes">Mercedes</option>
+                                <option value="Audi">Audi</option>
+                                <option value="Renault">Renault</option>
+                                <option value="Peugeot">Peugeot</option>
+                                <option value="Fiat">Fiat</option>
+                                <option value="Hyundai">Hyundai</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vehicleModel">Model</label>
+                            <input type="text" id="vehicleModel" placeholder="Örn: Corolla, Golf, Focus" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vehicleYear">Model Yılı</label>
+                            <input type="number" id="vehicleYear" min="1990" max="2024" placeholder="2020" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mileage">Kilometre</label>
+                            <input type="number" id="mileage" placeholder="150000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="problemCategory">Arıza Kategorisi</label>
+                            <select id="problemCategory" required>
+                                <option value="">Kategori Seçin</option>
+                                <option value="motor">Motor Problemleri</option>
+                                <option value="fren">Fren Sistemi</option>
+                                <option value="elektrik">Elektrik Sistemi</option>
+                                <option value="suspensiyon">Süspansiyon</option>
+                                <option value="transmisyon">Şanzıman</option>
+                                <option value="klima">Klima Sistemi</option>
+                                <option value="yakit">Yakıt Sistemi</option>
+                                <option value="egzoz">Egzoz Sistemi</option>
+                                <option value="direksiyon">Direksiyon Sistemi</option>
+                                <option value="lastik">Lastik ve Jant</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="urgency">Aciliyet Durumu</label>
+                            <select id="urgency" required>
+                                <option value="">Aciliyet Seçin</option>
+                                <option value="low">Düşük - Zamanla halledilebilir</option>
+                                <option value="medium">Orta - Yakın zamanda bakım gerekli</option>
+                                <option value="high">Yüksek - Acil müdahale gerekli</option>
+                                <option value="critical">Kritik - Araç kullanılamaz durumda</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="symptoms">Belirtiler</label>
+                            <textarea id="symptoms" rows="4" placeholder="Aracınızda gözlemlediğiniz problemleri detaylı olarak açıklayın..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn">🔍 AI Destekli Arıza Teşhisi Yap</button>
+                    </form>
+
+                    <div id="diagnosisResult" class="diagnosis-result">
+                        <h3 id="resultTitle"></h3>
+                        <p id="resultDescription"></p>
+                        <p id="resultSolution"></p>
+                        <p id="resultCost"></p>
+                        <div id="aiSuggestion" class="ai-suggestion">
+                            <h3>🤖 AI Önerisi</h3>
+                            <p id="aiText"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📋 Son Arızalar</h2>
+                    <div id="recentIssues" class="history-list">
+                        <p style="text-align: center; color: #666; margin-top: 20px;">Henüz arıza teşhisi yapılmamış</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bakım Takibi Sekmesi -->
+        <div id="maintenance" class="tab-content">
+            <div class="card full-width">
+                <h2>🛠️ Bakım Takip Sistemi</h2>
+                
+                <div class="form-group">
+                    <label for="currentMileage">Güncel Kilometre</label>
+                    <input type="number" id="currentMileage" placeholder="Aracınızın güncel kilometresini girin">
+                    <button class="btn" onclick="updateMaintenance()" style="width: auto; margin-top: 10px;">Bakım Durumunu Güncelle</button>
+                </div>
+
+                <div id="maintenanceList">
+                    <!-- Bakım öğeleri buraya eklenecek -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Geçmiş Sekmesi -->
+        <div id="history" class="tab-content">
+            <div class="card full-width">
+                <h2>📋 Arıza Geçmişi</h2>
+                
+                <div class="search-box">
+                    <input type="text" id="searchHistory" placeholder="Arıza geçmişinde ara...">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterHistory('all')">Tümü</button>
+                    <button class="filter-btn" onclick="filterHistory('high')">Kritik</button>
+                    <button class="filter-btn" onclick="filterHistory('medium')">Orta</button>
+                    <button class="filter-btn" onclick="filterHistory('low')">Düşük</button>
+                    <button class="filter-btn" onclick="filterHistory('resolved')">Çözülen</button>
+                    <button class="filter-btn" onclick="filterHistory('pending')">Bekleyen</button>
+                </div>
+
+                <div class="export-section">
+                    <button class="btn btn-secondary" onclick="exportHistory('pdf')">📄 PDF İndir</button>
+                    <button class="btn btn-secondary" onclick="exportHistory('excel')">📊 Excel İndir</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">🗑️ Geçmişi Temizle</button>
+                </div>
+
+                <div id="historyList" class="history-list">
+                    <p style="text-align: center; color: #666; margin-top: 20px;">Henüz arıza teşhisi yapılmamış</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analiz Sekmesi -->
+        <div id="analytics" class="tab-content">
+            <div class="main-content">
+                <div class="card">
+                    <h2>📊 Arıza Analizi</h2>
+                    <canvas id="faultChart" width="400" height="300"></canvas>
+                </div>
+                <div class="card">
+                    <h2>💰 Maliyet Analizi</h2>
+                    <canvas id="costChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+            
+            <div class="card full-width">
+                <h2>🎯 Öneriler ve Tahminler</h2>
+                <div id="predictiveAnalysis">
+                    <!-- Tahmine dayalı analizler buraya eklenecek -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Gelişmiş arıza veritabanı
+        const faultDatabase = {
+            motor: {
+                'titreşim': {
+                    title: 'Motor Titreşimi',
+                    description: 'Motor mesnedlerinde aşınma veya motor ayarlarında bozukluk',
+                    solution: 'Motor mesnedlerini kontrol ettirin, motor ayarlarını yaptırın',
+                    severity: 'medium',
+                    cost: '500-1500',
+                    aiAdvice: 'Bu problem zamanla kötüleşebilir. Erken müdahale daha ekonomik olacaktır.'
+                },
+                'ses': {
+                    title: 'Anormal Motor Sesi',
+                    description: 'Motor içi parçalarda aşınma veya yağlama problemi',
+                    solution: 'Motor yağını değiştirin, motor kontrolü yaptırın',
+                    severity: 'high',
+                    cost: '300-2000',
+                    aiAdvice: 'Motor sesi ciddi hasarlara işaret edebilir. Acil kontrol önerilir.'
+                },
+                'duman': {
+                    title: 'Egzozdan Duman Çıkması',
+                    description: 'Yanma odası problemleri veya yağ kaçağı',
+                    solution: 'Acil servis kontrolü gerekli',
+                    severity: 'high',
+                    cost: '1000-5000',
+                    aiAdvice: 'Duman rengi önemli: Beyaz=su, Mavi=yağ, Siyah=yakıt problemi'
+                }
+            },
+            fren: {
+                'gıcırtı': {
+                    title: 'Fren Balata Aşınması',
+                    description: 'Fren balatalarının değişim zamanı gelmiş',
+                    solution: 'Fren balatalarını değiştirin',
+                    severity: 'high',
+                    cost: '200-600',
+                    aiAdvice: 'Fren güvenliği kritiktir. Gecikme yaşamayın.'
+                },
+                'titreşim': {
+                    title: 'Fren Diski Problemi',
+                    description: 'Fren disklerinde çarpıklık veya aşınma',
+                    solution: 'Fren disklerini tornalayın veya değiştirin',
+                    severity: 'high',
+                    cost: '400-1200',
+                    aiAdvice: 'Fren titreşimi kazaya neden olabilir. Acil müdahale gerekli.'
+                }
+            },
+            elektrik: {
+                'çalışmıyor': {
+                    title: 'Akü Problemi',
+                    description: 'Akü boş veya arızalı',
+                    solution: 'Akü şarj edin veya değiştirin',
+                    severity: 'medium',
+                    cost: '300-800',
+                    aiAdvice: 'Akü ömrü genelde 3-5 yıldır. Yaşı kontrol edin.'
+                },
+                'yanmıyor': {
+                    title: 'Ampul Arızası',
+                    description: 'Far veya sinyal ampulü yanmış',
+                    solution: 'Arızalı ampulü değiştirin',
+                    severity: 'low',
+                    cost: '20-100',
+                    aiAdvice: 'Trafik güvenliği için hemen değiştirin.'
+                }
+            }
+        };
+
+        // Bakım takip sistemi
+        const maintenanceSchedule = {
+            'Motor Yağı': { interval: 10000, lastDone: 0, cost: '150-300' },
+            'Fren Balata': { interval: 40000, lastDone: 0, cost: '200-600' },
+            'Lastik Rotasyonu': { interval: 15000, lastDone: 0, cost: '50-100' },
+            'Hava Filtresi': { interval: 20000, lastDone: 0, cost: '50-150' },
+            'Fren Diski': { interval: 80000, lastDone: 0, cost: '400-1200' },
+            'Amortisör': { interval: 100000, lastDone: 0, cost: '600-1500' },
+            'Şanzıman Yağı': { interval: 60000, lastDone: 0, cost: '300-800' },
+            'Klima Filtresi': { interval: 15000, lastDone: 0, cost: '30-80' }
+        };
+
+        let diagnosisHistory = JSON.parse(localStorage.getItem('diagnosisHistory')) || [];
+        let stats = JSON.parse(localStorage.getItem('vehicleStats')) || {
+            total: 0,
+            critical: 0,
+            resolved: 0,
+            totalCost: 0
+        };
+        let currentFilter = 'all';
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            displayHistory();
+            displayRecentIssues();
+            updateMaintenanceDisplay();
+            setupSearchFilter();
+        });
+
+        // Sekme değiştirme
+        function switchTab(tabName) {
+            // Tüm sekmeleri gizle
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Seçilen sekmeyi göster
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Analiz sekmesi açıldığında grafikleri çiz
+            if (tabName === 'analytics') {
+                setTimeout(() => {
+                    drawCharts();
+                    generatePredictiveAnalysis();
+                }, 100);
+            }
+        }
+
+        // Arıza teşhisi formu
+        document.getElementById('diagnosisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const brand = document.getElementById('vehicleBrand').value;
+            const model = document.getElementById('vehicleModel').value;
+            const year = document.getElementById('vehicleYear').value;
+            const mileage = document.getElementById('mileage').value;
+            const category = document.getElementById('problemCategory').value;
+            const urgency = document.getElementById('urgency').value;
+            const symptoms = document.getElementById('symptoms').value.toLowerCase();
+
+            // Arıza teşhisi yap
+            const diagnosis = diagnoseFault(category, symptoms, urgency);
+            
+            // Sonucu göster
+            displayDiagnosis(diagnosis);
+            
+            // Geçmişe ekle
+            const historyItem = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('tr-TR'),
+                time: new Date().toLocaleTimeString('tr-TR'),
+                vehicle: `${brand} ${model} (${year})`,
+                mileage: mileage,
+                category: category,
+                urgency: urgency,
+                symptoms: symptoms,
+                diagnosis: diagnosis,
+                resolved: false,
+                cost: extractCostNumber(diagnosis.cost)
+            };
+            
+            diagnosisHistory.unshift(historyItem);
+            localStorage.setItem('diagnosisHistory', JSON.stringify(diagnosisHistory));
+            
+            // İstatistikleri güncelle
+            stats.total++;
+            if (diagnosis.severity === 'high') {
+                stats.critical++;
+            }
+            stats.totalCost += historyItem.cost;
+            localStorage.setItem('vehicleStats', JSON.stringify(stats));
+            
+            updateStats();
+            displayHistory();
+            displayRecentIssues();
+            
+            showNotification('Arıza teşhisi başarıyla tamamlandı!', 'success');
+        });
+
+        function diagnoseFault(category, symptoms, urgency) {
+            const categoryFaults = faultDatabase[category] || {};
+            
+            // Belirtilere göre en uygun arızayı bul
+            for (const [key, fault] of Object.entries(categoryFaults)) {
+                if (symptoms.includes(key)) {
+                    // Aciliyet durumuna göre önem derecesini ayarla
+                    if (urgency === 'critical') fault.severity = 'high';
+                    return fault;
+                }
+            }
+            
+            // Genel arıza kategorisi
+            const generalFaults = {
+                motor: {
+                    title: 'Genel Motor Problemi',
+                    description: 'Motor sisteminde bir problem tespit edildi',
+                    solution: 'Detaylı motor kontrolü yaptırmanız önerilir',
+                    severity: urgency === 'critical' ? 'high' : 'medium',
+                    cost: '500-2000',
+                    aiAdvice: 'Motor problemleri erken teşhis edildiğinde daha ekonomik çözülebilir.'
+                },
+                fren: {
+                    title: 'Fren Sistemi Kontrolü',
+                    description: 'Fren sisteminde kontrol gerekli',
+                    solution: 'Fren sistemini acilen kontrol ettirin',
+                    severity: 'high',
+                    cost: '300-1500',
+                    aiAdvice: 'Fren güvenliği yaşamsal önem taşır. Gecikmeyin.'
+                }
+            };
+            
+            return generalFaults[category] || {
+                title: 'Bilinmeyen Arıza',
+                description: 'Belirtiler değerlendirildi ancak kesin teşhis konulamadı',
+                solution: 'Yetkili servise başvurmanız önerilir',
+                severity: urgency === 'critical' ? 'high' : 'medium',
+                cost: 'Değişken',
+                aiAdvice: 'Detaylı inceleme için uzman görüşü alın.'
+            };
+        }
+
+        function displayDiagnosis(diagnosis) {
+            const resultDiv = document.getElementById('diagnosisResult');
+            const titleEl = document.getElementById('resultTitle');
+            const descEl = document.getElementById('resultDescription');
+            const solutionEl = document.getElementById('resultSolution');
+            const costEl = document.getElementById('resultCost');
+            const aiEl = document.getElementById('aiText');
+            
+            titleEl.textContent = diagnosis.title;
+            descEl.textContent = `Açıklama: ${diagnosis.description}`;
+            solutionEl.textContent = `Çözüm: ${diagnosis.solution}`;
+            costEl.textContent = `Tahmini Maliyet: ${diagnosis.cost} TL`;
+            aiEl.textContent = diagnosis.aiAdvice || 'Düzenli bakım ve kontroller önerilir.';
+            
+            // Önem derecesine göre renk
+            resultDiv.className = 'diagnosis-result';
+            if (diagnosis.severity === 'high') {
+                resultDiv.classList.add('error');
+            } else if (diagnosis.severity === 'medium') {
+                resultDiv.classList.add('warning');
+            }
+            
+            resultDiv.style.display = 'block';
+        }
+
+        function displayHistory() {
+            const historyList = document.getElementById('historyList');
+            let filteredHistory = diagnosisHistory;
+
+            // Filtreleme
+            if (currentFilter !== 'all') {
+                filteredHistory = diagnosisHistory.filter(item => {
+                    switch(currentFilter) {
+                        case 'high':
+                        case 'medium':
+                        case 'low':
+                            return item.diagnosis.severity === currentFilter;
+                        case 'resolved':
+                            return item.resolved;
+                        case 'pending':
+                            return !item.resolved;
+                        default:
+                            return true;
+                    }
+                });
+            }
+
+            // Arama
+            const searchTerm = document.getElementById('searchHistory')?.value.toLowerCase() || '';
+            if (searchTerm) {
+                filteredHistory = filteredHistory.filter(item => 
+                    item.diagnosis.title.toLowerCase().includes(searchTerm) ||
+                    item.vehicle.toLowerCase().includes(searchTerm) ||
+                    item.symptoms.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (filteredHistory.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #666; margin-top: 20px;">Gösterilecek kayıt bulunamadı</p>';
+                return;
+            }
+            
+            historyList.innerHTML = filteredHistory.map(item => `
+                <div class="history-item severity-${item.diagnosis.severity}">
+                    <h4>${item.diagnosis.title} ${item.resolved ? '✅' : ''}</h4>
+                    <p><strong>Araç:</strong> ${item.vehicle} | <strong>Km:</strong> ${item.mileage}</p>
+                    <p><strong>Tarih:</strong> ${item.date} ${item.time} | <strong>Kategori:</strong> ${getCategoryName(item.category)}</p>
+                    <p><strong>Aciliyet:</strong> ${getUrgencyName(item.urgency)} | <strong>Maliyet:</strong> ${item.diagnosis.cost} TL</p>
+                    <p><strong>Belirtiler:</strong> ${item.symptoms}</p>
+                    <div style="margin-top: 10px;">
+                        <button onclick="markAsResolved(${item.id})" class="btn ${item.resolved ? 'btn-success' : ''}" style="width: auto; padding: 5px 15px; font-size: 14px; margin-right: 10px;">
+                            ${item.resolved ? '✅ Çözüldü' : 'Çözüldü Olarak İşaretle'}
+                        </button>
+                        <button onclick="deleteHistoryItem(${item.id})" class="btn btn-danger" style="width: auto; padding: 5px 15px; font-size: 14px;">
+                            🗑️ Sil
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayRecentIssues() {
+            const recentList = document.getElementById('recentIssues');
+            const recent = diagnosisHistory.slice(0, 5);
+            
+            if (recent.length === 0) {
+                recentList.innerHTML = '<p style="text-align: center; color: #666; margin-top: 20px;">Henüz arıza teşhisi yapılmamış</p>';
+                return;
+            }
+            
+            recentList.innerHTML = recent.map(item => `
+                <div class="history-item severity-${item.diagnosis.severity}">
+                    <h4>${item.diagnosis.title}</h4>
+                    <p>${item.vehicle} - ${item.date}</p>
+                    <p>Maliyet: ${item.diagnosis.cost} TL</p>
+                </div>
+            `).join('');
+        }
+
+        function updateMaintenanceDisplay() {
+            const maintenanceList = document.getElementById('maintenanceList');
+            const currentKm = parseInt(document.getElementById('currentMileage')?.value) || 0;
+            
+            let html = '';
+            for (const [item, data] of Object.entries(maintenanceSchedule)) {
+                const nextService = data.lastDone + data.interval;
+                const remaining = nextService - currentKm;
+                const progress = Math.max(0, Math.min(100, ((currentKm - data.lastDone) / data.interval) * 100));
+                
+                let status = 'maintenance-item';
+                let statusText = 'Normal';
+                
+                if (remaining <= 0) {
+                    status += ' maintenance-overdue';
+                    statusText = 'Süresi Geçmiş!';
+                } else if (remaining <= 5000) {
+                    status += ' maintenance-due-soon';
+                    statusText = 'Yakında Gerekli';
+                }
+                
+                html += `
+                    <div class="${status}">
+                        <div style="flex: 1;">
+                            <h4>${item}</h4>
+                            <p>Son Bakım: ${data.lastDone} km | Sonraki: ${nextService} km</p>
+                            <p>Kalan: ${remaining > 0 ? remaining + ' km' : 'Süresi geçmiş'} | Maliyet: ${data.cost} TL</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>${statusText}</strong><br>
+                            <button onclick="markMaintenanceDone('${item}')" class="btn" style="width: auto; padding: 5px 10px; font-size: 12px; margin-top: 5px;">
+                                Yapıldı
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            maintenanceList.innerHTML = html;
+        }
+
+        function updateMaintenance() {
+            updateMaintenanceDisplay();
+            showNotification('Bakım durumu güncellendi!', 'success');
+        }
+
+        function markMaintenanceDone(item) {
+            const currentKm = parseInt(document.getElementById('currentMileage').value) || 0;
+            if (currentKm > 0) {
+                maintenanceSchedule[item].lastDone = currentKm;
+                localStorage.setItem('maintenanceSchedule', JSON.stringify(maintenanceSchedule));
+                updateMaintenanceDisplay();
+                showNotification(`${item} bakımı tamamlandı olarak işaretlendi!`, 'success');
+            } else {
+                showNotification('Lütfen güncel kilometreyi girin!', 'error');
+            }
+        }
+
+        function setupSearchFilter() {
+            const searchInput = document.getElementById('searchHistory');
+            if (searchInput) {
+                searchInput.addEventListener('input', displayHistory);
+            }
+        }
+
+        function filterHistory(filter) {
+            currentFilter = filter;
+            
+            // Aktif butonu güncelle
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayHistory();
+        }
+
+        function markAsResolved(id) {
+            const item = diagnosisHistory.find(h => h.id === id);
+            if (item && !item.resolved) {
+                item.resolved = true;
+                stats.resolved++;
+                localStorage.setItem('diagnosisHistory', JSON.stringify(diagnosisHistory));
+                localStorage.setItem('vehicleStats', JSON.stringify(stats));
+                updateStats();
+                displayHistory();
+                displayRecentIssues();
+                showNotification('Arıza çözüldü olarak işaretlendi!', 'success');
+            }
+        }
+
+        function deleteHistoryItem(id) {
+            if (confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                const index = diagnosisHistory.findIndex(h => h.id === id);
+                if (index > -1) {
+                    const item = diagnosisHistory[index];
+                    diagnosisHistory.splice(index, 1);
+                    
+                    // İstatistikleri güncelle
+                    stats.total--;
+                    if (item.diagnosis.severity === 'high') stats.critical--;
+                    if (item.resolved) stats.resolved--;
+                    stats.totalCost -= item.cost;
+                    
+                    localStorage.setItem('diagnosisHistory', JSON.stringify(diagnosisHistory));
+                    localStorage.setItem('vehicleStats', JSON.stringify(stats));
+                    updateStats();
+                    displayHistory();
+                    displayRecentIssues();
+                    showNotification('Kayıt silindi!', 'success');
+                }
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Tüm arıza geçmişini silmek istediğinizden emin misiniz?')) {
+                diagnosisHistory = [];
+                stats = { total: 0, critical: 0, resolved: 0, totalCost: 0 };
+                localStorage.removeItem('diagnosisHistory');
+                localStorage.removeItem('vehicleStats');
+                updateStats();
+                displayHistory();
+                displayRecentIssues();
+                showNotification('Tüm geçmiş silindi!', 'success');
+            }
+        }
+
+        function exportHistory(format) {
+            if (diagnosisHistory.length === 0) {
+                showNotification('Dışa aktarılacak veri bulunamadı!', 'error');
+                return;
+            }
+
+            if (format === 'pdf') {
+                // PDF export simülasyonu
+                const content = diagnosisHistory.map(item => 
+                    `${item.date} - ${item.diagnosis.title} - ${item.vehicle} - ${item.diagnosis.cost} TL`
+                ).join('\n');
+                
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ariza-gecmisi.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showNotification('Arıza geçmişi indirildi!', 'success');
+            } else if (format === 'excel') {
+                // Excel export simülasyonu
+                const csvContent = 'Tarih,Araç,Arıza,Kategori,Maliyet,Durum\n' + 
+                    diagnosisHistory.map(item => 
+                        `${item.date},${item.vehicle},${item.diagnosis.title},${getCategoryName(item.category)},${item.diagnosis.cost} TL,${item.resolved ? 'Çözüldü' : 'Bekliyor'}`
+                    ).join('\n');
+                
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ariza-gecmisi.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showNotification('Excel dosyası indirildi!', 'success');
+            }
+        }
+
+        function drawCharts() {
+            // Basit grafik çizimi (Canvas API kullanarak)
+            drawFaultChart();
+            drawCostChart();
+        }
+
+        function drawFaultChart() {
+            const canvas = document.getElementById('faultChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Canvas'ı temizle
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Arıza kategorilerini say
+            const categories = {};
+            diagnosisHistory.forEach(item => {
+                categories[item.category] = (categories[item.category] || 0) + 1;
+            });
+            
+            if (Object.keys(categories).length === 0) {
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Henüz veri yok', canvas.width/2, canvas.height/2);
+                return;
+            }
+            
+            // Basit bar chart çiz
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
+            const entries = Object.entries(categories);
+            const maxValue = Math.max(...Object.values(categories));
+            const barWidth = canvas.width / entries.length - 20;
+            
+            entries.forEach(([category, count], index) => {
+                const barHeight = (count / maxValue) * (canvas.height - 60);
+                const x = index * (barWidth + 20) + 10;
+                const y = canvas.height - barHeight - 30;
+                
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                // Kategori adı
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(getCategoryName(category), x + barWidth/2, canvas.height - 10);
+                
+                // Değer
+                ctx.fillText(count.toString(), x + barWidth/2, y - 5);
+            });
+        }
+
+        function drawCostChart() {
+            const canvas = document.getElementById('costChart');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (diagnosisHistory.length === 0) {
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Henüz veri yok', canvas.width/2, canvas.height/2);
+                return;
+            }
+            
+            // Aylık maliyet hesapla
+            const monthlyCosts = {};
+            diagnosisHistory.forEach(item => {
+                const month = item.date.substring(3); // MM/YYYY
+                monthlyCosts[month] = (monthlyCosts[month] || 0) + item.cost;
+            });
+            
+            // Line chart çiz
+            const entries = Object.entries(monthlyCosts).slice(-6); // Son 6 ay
+            if (entries.length < 2) return;
+            
+            const maxCost = Math.max(...Object.values(monthlyCosts));
+            const stepX = canvas.width / (entries.length - 1);
+            
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            entries.forEach(([month, cost], index) => {
+                const x = index * stepX;
+                const y = canvas.height - 30 - (cost / maxCost) * (canvas.height - 60);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // Nokta çiz
+                ctx.fillStyle = '#667eea';
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Ay etiketi
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(month, x, canvas.height - 10);
+            });
+            
+            ctx.stroke();
+        }
+
+        function generatePredictiveAnalysis() {
+            const analysisDiv = document.getElementById('predictiveAnalysis');
+            
+            if (diagnosisHistory.length < 3) {
+                analysisDiv.innerHTML = '<p>Tahmine dayalı analiz için daha fazla veri gerekli (en az 3 kayıt)</p>';
+                return;
+            }
+            
+            // Basit tahminler
+            const avgCost = stats.totalCost / stats.total;
+            const criticalRate = (stats.critical / stats.total) * 100;
+            const resolveRate = (stats.resolved / stats.total) * 100;
+            
+            let predictions = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div class="card">
+                        <h3>💰 Maliyet Tahmini</h3>
+                        <p>Ortalama arıza maliyeti: <strong>${avgCost.toFixed(0)} TL</strong></p>
+                        <p>Yıllık tahmini maliyet: <strong>${(avgCost * 12).toFixed(0)} TL</strong></p>
+                    </div>
+                    <div class="card">
+                        <h3>⚠️ Risk Analizi</h3>
+                        <p>Kritik arıza oranı: <strong>%${criticalRate.toFixed(1)}</strong></p>
+                        <p>Çözüm oranı: <strong>%${resolveRate.toFixed(1)}</strong></p>
+                    </div>
+                </div>
+            `;
+            
+            // En sık görülen arıza kategorisi
+            const categoryCount = {};
+            diagnosisHistory.forEach(item => {
+                categoryCount[item.category] = (categoryCount[item.category] || 0) + 1;
+            });
+            
+            const mostCommon = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0];
+            if (mostCommon) {
+                predictions += `
+                    <div class="ai-suggestion">
+                        <h3>🎯 Öneriler</h3>
+                        <p><strong>En sık karşılaşılan problem:</strong> ${getCategoryName(mostCommon[0])} (${mostCommon[1]} kez)</p>
+                        <p><strong>Öneri:</strong> Bu kategoride önleyici bakım yapmanız önerilir.</p>
+                        <p><strong>Bakım Hatırlatması:</strong> Düzenli kontroller maliyetleri %30-50 azaltabilir.</p>
+                    </div>
+                `;
+            }
+            
+            analysisDiv.innerHTML = predictions;
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                motor: 'Motor',
+                fren: 'Fren',
+                elektrik: 'Elektrik',
+                suspensiyon: 'Süspansiyon',
+                transmisyon: 'Şanzıman',
+                klima: 'Klima',
+                yakit: 'Yakıt',
+                egzoz: 'Egzoz',
+                direksiyon: 'Direksiyon',
+                lastik: 'Lastik'
+            };
+            return names[category] || category;
+        }
+
+        function getUrgencyName(urgency) {
+            const names = {
+                low: 'Düşük',
+                medium: 'Orta',
+                high: 'Yüksek',
+                critical: 'Kritik'
+            };
+            return names[urgency] || urgency;
+        }
+
+        function extractCostNumber(costString) {
+            const match = costString.match(/(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        function updateStats() {
+            document.getElementById('totalDiagnoses').textContent = stats.total;
+            document.getElementById('criticalIssues').textContent = stats.critical;
+            document.getElementById('resolvedIssues').textContent = stats.resolved;
+            document.getElementById('avgCost').textContent = stats.total > 0 ? Math.round(stats.totalCost / stats.total) + '₺' : '0₺';
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Sayfa yüklendiğinde bakım verilerini yükle
+        const savedMaintenance = localStorage.getItem('maintenanceSchedule');
+        if (savedMaintenance) {
+            Object.assign(maintenanceSchedule, JSON.parse(savedMaintenance));
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'988b9d4427db5840',t:'MTc1OTQ4NTg1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
